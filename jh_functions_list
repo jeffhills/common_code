@@ -12,10 +12,10 @@ jh_fit_model_function <- function(outcome_text, model_type, predictor_text, coho
   
   model_formula <- as.formula(paste(outcome_text, " ~ ", predictor_text))
   if(model_type == "lrm"){
-    model_fit <- lrm(model_formula, cohort_df)
+    model_fit <- lrm(model_formula, cohort_df, x = TRUE, y = TRUE)
   }
     if(model_type == "ols"){
-    model_fit <- ols(model_formula, cohort_df)
+    model_fit <- ols(model_formula, cohort_df, x = TRUE, y = TRUE)
     }
 model_fit  
 }
