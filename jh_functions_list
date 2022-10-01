@@ -8,6 +8,18 @@ library(lubridate)
 library(glue)
 library(tableone)
 
+jh_fit_model_function <- function(outcome_text, model_type, predictor_text, cohort_df){
+  
+  model_formula <- as.formula(paste(outcome_text, " ~ ", predictor_text))
+  if(model_type == "lrm"){
+    model_fit <- lrm(model_formula, cohort_df)
+  }
+    if(model_type == "ols"){
+    model_fit <- ols(model_formula, cohort_df)
+    }
+model_fit  
+}
+
 jh_get_regression_tibble_function <- function(imputed_model){
   tab_1 <- gtsummary::tbl_regression(imputed_model) %>%
   add_significance_stars() %>%
