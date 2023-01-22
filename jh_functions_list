@@ -117,7 +117,11 @@ jh_symbols_list <- list(superscript_2 = "²",
                         rho_label = sprintf('\u03c1'),
                         multiplication_symbol = "×", 
                         beta_symbol = "β", 
-                        plus_minus_sign = "±")
+                        plus_minus_sign = "±", 
+                        arrow_up = "↑", 
+                        arrow_down = "↓", 
+                        arrow_left = "←", 
+                        arrow_right = "→")
 
 jh_symbols_list
 
