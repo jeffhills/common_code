@@ -123,8 +123,6 @@ jh_symbols_list <- list(superscript_2 = "²",
                         arrow_left = "←", 
                         arrow_right = "→")
 
-jh_symbols_list
-
 # 0 1 2 3 4 5 6 7 8 9 a b c d e f
 # 8                                
 # 9                                
@@ -136,6 +134,10 @@ jh_symbols_list
 # f ð ñ ò ó ô õ ö ÷ ø ù ú û ü ý þ ÿ
 
 ## COLOR PALETTES 
+
+jh_font_size_to_ggtext_size <- function(font_size){
+  font_size*0.36
+}
 
 colorblind_palette <<- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 colorblind_palette_dark <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -217,7 +219,6 @@ jh_text_list <- list(text_8 = element_text(size = 8),
                      text_16_bold = element_text(face = "bold", size = 16), 
                      text_16_bold_centered = element_text(face = "bold", size = 16, hjust = 0.5) )
 
-
 my_theme_for_arranged <<- theme_minimal() +
   theme(strip.text = jh_text_list$text_12_bold, strip.placement = "outside",
         axis.text = jh_text_list$text_10,
@@ -241,6 +242,23 @@ my_theme_xaxis_angled <<- theme_minimal() +
 
 
 #FUNCTIONS
+
+## MAKE GGTEXTBOX FOR GGPLOT 
+jh_plot_text_box_function <- function(text_label = "enter label", text_x = 0.5, text_y = 0.5, text_size = 10, box_color = "blue", fontface = "bold.italic"){
+  ggtext::geom_textbox(aes(x = text_x, 
+                             y = text_y, 
+                             label = text_label),
+                       box.padding = unit(c(3,3,2,3), "pt"),
+                       color = box_color,
+                       box.r = unit(1.5, "pt"),
+                       size  = text_size*0.36,
+                       fontface = fontface,
+                       text.color = "black" ,
+                       box.size = unit(1, "pt"),
+                       width = NULL
+                       ) 
+}
+
 
 ## ROUNDING FUNCTION
 jh_round_function <- function(number_to_round,round_to_nearest){
