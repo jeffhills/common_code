@@ -45,7 +45,7 @@ jh_number_to_vertebra_function <- function(verebral_number){
   )
 }
 
-jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5")) %>%
+jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5", "s1")) %>%
   mutate(level_label = str_to_upper(level)) %>% 
   mutate(level_tilt = paste0(level, "_tilt")) %>%
   mutate(level_pelvic_angle = paste0(level, "_pelvic_angle")) %>%
@@ -55,7 +55,68 @@ jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6
   mutate(level_cobb_label = paste0(level_label, "-S1")) %>%
   select(level, level_tilt, level_pelvic_angle, level_cobb_angle, level_label, level_tilt_label, level_pelvic_angle_label, level_cobb_label) %>%
   mutate(across(everything(), fct_inorder)) %>%
-  mutate(across(everything(), fct_rev))
+  mutate(across(everything(), fct_rev)) %>%
+  mutate(vertebral_count = row_number())
+
+jh_add_numeric_uiv_liv_column_to_df <- function(df){
+  
+  df %>%
+    mutate(uiv_numeric = case_when(
+      uiv == 'C1' ~ 1,
+      uiv == 'C2' ~ 2,
+      uiv == 'C3' ~ 3,
+      uiv == 'C4' ~ 4,
+      uiv == 'C5' ~ 5,
+      uiv == 'C6' ~ 6,
+      uiv == 'C7' ~ 7,
+      uiv == 'T1' ~ 8,
+      uiv == 'T2' ~ 9,
+      uiv == 'T3' ~ 10,
+      uiv == 'T4' ~ 11,
+      uiv == 'T5' ~ 12,
+      uiv == 'T6' ~ 13,
+      uiv == 'T7' ~ 14,
+      uiv == 'T8' ~ 15,
+      uiv == 'T9' ~ 16,
+      uiv == 'T10' ~ 17,
+      uiv == 'T11' ~ 18,
+      uiv == 'T12' ~ 19,
+      uiv == 'L1' ~ 20,
+      uiv == 'L2' ~ 21,
+      uiv == 'L3' ~ 22,
+      uiv == 'L4' ~ 23,
+      uiv == 'L5' ~ 24,
+      uiv == 'S1' ~ 25
+    )) %>% 
+    mutate(liv_numeric = case_when(
+      liv == 'C1' ~ 1,
+      liv == 'C2' ~ 2,
+      liv == 'C3' ~ 3,
+      liv == 'C4' ~ 4,
+      liv == 'C5' ~ 5,
+      liv == 'C6' ~ 6,
+      liv == 'C7' ~ 7,
+      liv == 'T1' ~ 8,
+      liv == 'T2' ~ 9,
+      liv == 'T3' ~ 10,
+      liv == 'T4' ~ 11,
+      liv == 'T5' ~ 12,
+      liv == 'T6' ~ 13,
+      liv == 'T7' ~ 14,
+      liv == 'T8' ~ 15,
+      liv == 'T9' ~ 16,
+      liv == 'T10' ~ 17,
+      liv == 'T11' ~ 18,
+      liv == 'T12' ~ 19,
+      liv == 'L1' ~ 20,
+      liv == 'L2' ~ 21,
+      liv == 'L3' ~ 22,
+      liv == 'L4' ~ 23,
+      liv == 'L5' ~ 24,
+      liv == 'S1' ~ 25
+    )) %>%
+    mutate(uiv_numeric = as.integer(uiv_numeric), liv_numeric = as.integer(liv_numeric))
+}
 
 jh_spine_levels_factors_long_df <- tibble(level = c("occiput", "c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5", "s1", "ilium")) %>%
   # mutate(vertebral_count = c(-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26)) %>%
