@@ -8,13 +8,13 @@ jh_plot_angle_curve_function <- function(line_st_geometry = NULL,
                                        y = st_multilinestring(st_buffer(st_point(x = vertex_vector), 
                                                                         dist = distance_of_curve)))
   
+  st_multilinestring(list(st_coordinates(line_st_geometry),
+                          st_coordinates(angle_curve_geom)))
+  
   # curve_line <- st_buffer(x = angle_curve_geom, dist = line_size, endCapStyle = "FLAT", joinStyle = "BEVEL")
   # geom_sf(data = curve_line, fill = line_color, color = line_color)
   
   # angle_curve_geom
-  
-  st_multilinestring(list(st_coordinates(line_st_geometry),
-                          st_coordinates(angle_curve_geom)))
 }
 
 
@@ -157,20 +157,20 @@ jh_compute_pelvic_angles_and_pt_function <- function(pelvic_incidence_start = 50
 ###### VERTEBRAL BODY BUILD FUNCTION
 
 vertebral_body_build_function_new <- function(vertebral_slope, 
-                                          inferior_vert_list, 
-                                          endplate_width = 5, 
-                                          endplate_height = 4, 
-                                          wedge_body = TRUE, 
-                                          build_lines = FALSE,
-                                          line_down_length = 15,
-                                          line_up_length =15, 
-                                          horizontal_line_length = 15,
-                                          horizontal_line_down_length = 12,
-                                          horizontal_line_up_length = 10,
-                                          posterior_lordosis_line_length = 30, 
-                                          spine_facing = "right",
-                                          c2_body = FALSE,
-                                          pso = FALSE){
+                                              inferior_vert_list, 
+                                              endplate_width = 5, 
+                                              endplate_height = 4, 
+                                              wedge_body = TRUE, 
+                                              build_lines = FALSE,
+                                              line_down_length = 15,
+                                              line_up_length =15, 
+                                              horizontal_line_length = 15,
+                                              horizontal_line_down_length = 12,
+                                              horizontal_line_up_length = 10,
+                                              posterior_lordosis_line_length = 30, 
+                                              spine_facing = "right",
+                                              c2_body = FALSE,
+                                              pso = FALSE){
   
   spine_orientation <- if_else(spine_facing == "left", 1, -1)
   
@@ -223,7 +223,7 @@ vertebral_body_build_function_new <- function(vertebral_slope,
     ## then to SP - starting at SA, go along x axis the length of body_a, then up or down the length of body_d
     vert_sp <- c(vert_sa[[1]] + spine_orientation*body_a, vert_sa[[2]] + body_d) ## sp for superior posterior corner, closing the vert
     vert_ia_w <- c(inferior_vert_list$sa[[1]] - spine_orientation*0.5 * sin(vertebral_slope), inferior_vert_list$sa[[2]] + 0.5 * cos(vertebral_slope))
-
+    
     if(wedge_body == TRUE){
       vert_body <- rbind(vert_ip, vert_ia_w, vert_sa, vert_sp, vert_ip) ## binds the corners to make a square
     }else{
@@ -236,22 +236,22 @@ vertebral_body_build_function_new <- function(vertebral_slope,
     
     # body_midpoint_x <- ((vert_sp[1] + vert_sa[1])/2)
     # anterior_screw_point_x <- (body_midpoint_x + vert_sa[1])/2
-      
+    
     anterior_screw_point_x <- vert_sp[1] - (vert_sp[1] - vert_sa[1])*0.9
     
     # screw_sf <- st_buffer(x = st_linestring(rbind((vert_sp + vert_ip)/2,
     #                                               c(anterior_screw_point_x, anterior_screw_point_y))), 
     #                       dist = 0.5, nQuadSegs = 1, mitreLimit = 3)
     screw_sf <- st_buffer(x = (st_linestring(rbind((vert_sp + vert_ip)/2,
-                                                  c(anterior_screw_point_x, anterior_screw_point_y)))) - c(0.5,-0.5), 
+                                                   c(anterior_screw_point_x, anterior_screw_point_y)))) - c(0.5,-0.5), 
                           dist = 0.5, nQuadSegs = 1, mitreLimit = 3)
   }
   
-
+  
   vert_body_sf <- st_polygon(list(vert_body)) ## convert to an sf figure
   vert_body_centroid_sf <- st_centroid(vert_body_sf)
   
-
+  
   
   if(build_lines == TRUE){
     sup_endplate_parallel_line <-  st_linestring(rbind(vert_sp, # start at superior posterior corner of body and then --> end here:
@@ -316,7 +316,7 @@ vertebral_body_build_function_new <- function(vertebral_slope,
     dens_ia <- c(dens_ip[[1]] - spine_orientation*dens_a, dens_ip[[2]] - dens_d/2) ## ia for inferior anterior corner
     dens_sa <- c(dens_ia[[1]] - spine_orientation*dens_b, dens_ia[[2]] + dens_c) ## sa for superior anterior corner
     dens_sp <- c(dens_sa[[1]] + spine_orientation*dens_a, dens_sa[[2]] + dens_d/2) ## sp for superior posterior corner, closing the vert
-
+    
     dens <- rbind(dens_ip, dens_ia, dens_sa, dens_sp, dens_ip) ## binds the corners to make a square
     
     dens_sf <- st_polygon(list(dens)) 
@@ -355,31 +355,31 @@ vertebral_body_build_function_new <- function(vertebral_slope,
 ################### BUILD THE SPINE ##########################
 
 build_full_spine_function_new <- function(pelv_inc_value = 50, 
-                                      pt_value = 10,
-                                      segment_angle_list,
-                                      planned_l1_pelvic_angle = 10,
-                                      # l1_s1 = 60,
-                                      cervical_lordosis = 20,
-                                      l1l4_angle_line_length = 10,
-                                      l4s1_angle_line_length = 10,
-                                      posterior_line_length = 30,
-                                      fem_head_center_x = 0, 
-                                      spine_faces = "right",
-                                      pso_levels = c("")
-                                      ) {
+                                          pt_value = 10,
+                                          segment_angle_list,
+                                          planned_l1_pelvic_angle = 10,
+                                          # l1_s1 = 60,
+                                          cervical_lordosis = 20,
+                                          l1l4_angle_line_length = 10,
+                                          l4s1_angle_line_length = 10,
+                                          posterior_line_length = 30,
+                                          fem_head_center_x = 0, 
+                                          spine_faces = "right",
+                                          pso_levels = c("")
+) {
   
   t1_l1 <- (segment_angle_list$t12_segment_angle +
-                                               segment_angle_list$t11_segment_angle + 
-                                               segment_angle_list$t10_segment_angle + 
-                                               segment_angle_list$t9_segment_angle + 
-                                               segment_angle_list$t8_segment_angle + 
-                                               segment_angle_list$t7_segment_angle +
-                                               segment_angle_list$t6_segment_angle + 
-                                               segment_angle_list$t5_segment_angle + 
-                                               segment_angle_list$t4_segment_angle + 
-                                               segment_angle_list$t3_segment_angle +
-                                               segment_angle_list$t2_segment_angle + 
-                                               segment_angle_list$t1_segment_angle)
+              segment_angle_list$t11_segment_angle + 
+              segment_angle_list$t10_segment_angle + 
+              segment_angle_list$t9_segment_angle + 
+              segment_angle_list$t8_segment_angle + 
+              segment_angle_list$t7_segment_angle +
+              segment_angle_list$t6_segment_angle + 
+              segment_angle_list$t5_segment_angle + 
+              segment_angle_list$t4_segment_angle + 
+              segment_angle_list$t3_segment_angle +
+              segment_angle_list$t2_segment_angle + 
+              segment_angle_list$t1_segment_angle)
   
   spinal_kyphosis_input <- t1_l1
   
@@ -390,7 +390,7 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   }else{
     pt_value <- pt_value
   }
-
+  
   spine_orientation <- if_else(spine_faces == "left", 1, -1)
   
   ss_value <- pelv_inc_value - pt_value
@@ -410,7 +410,7 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   # l2s <- (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:4])))
   # l1s <- (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:5])))
   
-
+  
   ###########################
   
   ## Starting point is at the center of the femoral heads, then build sacrum and go up.
@@ -432,8 +432,8 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   ############################################# LUMBAR ############################################
   ############################################# LUMBAR ############################################
   ############################################# LUMBAR ############################################
-
-
+  
+  
   s1_anterior_screw_point <-c(s1_mid[[1]] - spine_orientation*2.2 * cos((pi / 180) * (ss_value+20)), 
                               s1_mid[[2]] - 2.2 * sin((pi / 180) * (ss_value+20)))
   # screw_sf <- st_buffer(x = st_linestring(rbind(s1p, c(s1_anterior_screw_point_x, s1_anterior_screw_point_y))), dist = 0.5, nQuadSegs = 1, mitreLimit = 3)
@@ -450,24 +450,24 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   l4s1_horizontal_length <- 12
   horizontal_line_down_length <- 10
   
-
+  
   l5_list <- vertebral_body_build_function_new(vertebral_slope = l5s, 
-                                           inferior_vert_list = sacrum_list,
-                                           endplate_width = 5, 
-                                           endplate_height = 4, 
-                                           wedge_body = FALSE,
-                                           spine_facing = spine_faces, 
-                                           pso = if_else(any(str_to_lower(pso_levels) == "l5"), TRUE, FALSE))
-
+                                               inferior_vert_list = sacrum_list,
+                                               endplate_width = 5, 
+                                               endplate_height = 4, 
+                                               wedge_body = FALSE,
+                                               spine_facing = spine_faces, 
+                                               pso = if_else(any(str_to_lower(pso_levels) == "l5"), TRUE, FALSE))
+  
   l4_list <- vertebral_body_build_function_new(vertebral_slope = l4s, inferior_vert_list = l5_list, endplate_width = 5, endplate_height = 4, wedge_body = FALSE, spine_facing = spine_faces, 
-                                           build_lines = TRUE, 
-                                           line_down_length = l4s1_angle_line_length, 
-                                           line_up_length = l1l4_angle_line_length, 
-                                           horizontal_line_down_length = l4s1_horizontal_length, 
-                                           horizontal_line_up_length = 9, 
-                                           horizontal_line_length = 40, 
-                                           posterior_lordosis_line_length = posterior_line_length, 
-                                           pso = if_else(any(str_to_lower(pso_levels) == "l4"), TRUE, FALSE))
+                                               build_lines = TRUE, 
+                                               line_down_length = l4s1_angle_line_length, 
+                                               line_up_length = l1l4_angle_line_length, 
+                                               horizontal_line_down_length = l4s1_horizontal_length, 
+                                               horizontal_line_up_length = 9, 
+                                               horizontal_line_length = 40, 
+                                               posterior_lordosis_line_length = posterior_line_length, 
+                                               pso = if_else(any(str_to_lower(pso_levels) == "l4"), TRUE, FALSE))
   
   l3_list <- vertebral_body_build_function_new(vertebral_slope = l3s, inferior_vert_list = l4_list, endplate_width = 5, endplate_height = 4, wedge_body = if_else(segment_angle_list$l3_segment_angle < 0, TRUE, FALSE), spine_facing = spine_faces, 
                                                pso = if_else(any(str_to_lower(pso_levels) == "l3"), TRUE, FALSE))
@@ -476,12 +476,12 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                                                pso = if_else(any(str_to_lower(pso_levels) == "l2"), TRUE, FALSE))
   
   l1_list <- vertebral_body_build_function_new(vertebral_slope = l1s, inferior_vert_list = l2_list, endplate_width = 5, endplate_height = 4, wedge_body = if_else(segment_angle_list$l1_segment_angle < 0, TRUE, FALSE), spine_facing = spine_faces, 
-                                           build_lines = TRUE, 
-                                           line_down_length = l1l4_angle_line_length, 
-                                           horizontal_line_down_length = horizontal_line_down_length, 
-                                           horizontal_line_length = 40, 
-                                           posterior_lordosis_line_length = posterior_line_length, 
-                                           pso = if_else(any(str_to_lower(pso_levels) == "l1"), TRUE, FALSE))
+                                               build_lines = TRUE, 
+                                               line_down_length = l1l4_angle_line_length, 
+                                               horizontal_line_down_length = horizontal_line_down_length, 
+                                               horizontal_line_length = 40, 
+                                               posterior_lordosis_line_length = posterior_line_length, 
+                                               pso = if_else(any(str_to_lower(pso_levels) == "l1"), TRUE, FALSE))
   
   
   ############################################# THORACIC ############################################
@@ -678,49 +678,49 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   segment_angle_list <- append(segment_angle_list, c(c7_segment_angle, c6_segment_angle, c5_segment_angle, c4_segment_angle, c3_segment_angle, c2_segment_angle, c1_segment_angle))
   
   c7_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:18]))), 
-                                           inferior_vert_list = t1_list,
-                                           endplate_width = 3.6, 
-                                           endplate_height = 1.5, 
-                                           wedge_body = TRUE, build_lines = TRUE,
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = t1_list,
+                                               endplate_width = 3.6, 
+                                               endplate_height = 1.5, 
+                                               wedge_body = TRUE, build_lines = TRUE,
+                                               spine_facing = spine_faces)
   c6_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:19]))),
-                                           inferior_vert_list = c7_list,
-                                           endplate_width = 3.4,
-                                           endplate_height = 1.5,
-                                           wedge_body = TRUE, 
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = c7_list,
+                                               endplate_width = 3.4,
+                                               endplate_height = 1.5,
+                                               wedge_body = TRUE, 
+                                               spine_facing = spine_faces)
   c5_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:20]))), 
-                                           inferior_vert_list = c6_list,
-                                           endplate_width = 3.2,
-                                           endplate_height = 1.5, 
-                                           wedge_body = TRUE, 
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = c6_list,
+                                               endplate_width = 3.2,
+                                               endplate_height = 1.5, 
+                                               wedge_body = TRUE, 
+                                               spine_facing = spine_faces)
   c4_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:21]))), 
-                                           inferior_vert_list = c5_list,
-                                           endplate_width = 3,
-                                           endplate_height = 1.5,
-                                           wedge_body = TRUE,
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = c5_list,
+                                               endplate_width = 3,
+                                               endplate_height = 1.5,
+                                               wedge_body = TRUE,
+                                               spine_facing = spine_faces)
   c3_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:22]))),
-                                           inferior_vert_list = c4_list,
-                                           endplate_width = 3,
-                                           endplate_height = 1.5,
-                                           wedge_body = TRUE,
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = c4_list,
+                                               endplate_width = 3,
+                                               endplate_height = 1.5,
+                                               wedge_body = TRUE,
+                                               spine_facing = spine_faces)
   c2_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:23]))),
-                                           inferior_vert_list = c3_list, 
-                                           endplate_width = 3,
-                                           endplate_height = 1.5, 
-                                           wedge_body = TRUE, 
-                                           build_lines = TRUE,
-                                           spine_facing = spine_faces,
-                                           c2_body = TRUE)
+                                               inferior_vert_list = c3_list, 
+                                               endplate_width = 3,
+                                               endplate_height = 1.5, 
+                                               wedge_body = TRUE, 
+                                               build_lines = TRUE,
+                                               spine_facing = spine_faces,
+                                               c2_body = TRUE)
   c1_list <- vertebral_body_build_function_new(vertebral_slope = (pi / 180) * (ss_value  - (Reduce("+", segment_angle_list[1:24]))),
-                                           inferior_vert_list = c2_list, 
-                                           endplate_width = 3.25, 
-                                           endplate_height = 1.5,
-                                           wedge_body = TRUE,
-                                           spine_facing = spine_faces)
+                                               inferior_vert_list = c2_list, 
+                                               endplate_width = 3.25, 
+                                               endplate_height = 1.5,
+                                               wedge_body = TRUE,
+                                               spine_facing = spine_faces)
   
   head_center <- st_point(c(c1_list$sa[[1]] + spine_orientation*1, 
                             c1_list$sa[[2]] +4))
@@ -767,7 +767,7 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   # l1s1_line_sf <- st_multilinestring(list(l1_list$sup_endplate_line_posterior,
   #                                                   s1_endplate_line_posterior))
   
-
+  
   
   ## LPA
   fem_head_l1_distance <- st_distance(x = l1_list$vert_body_center_sf, y = fem_head_center)
@@ -789,10 +789,21 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                                          c(l1_list$vert_body_center_sf[1], fem_head_center[2])))
   
   l1pa_line_sf <- st_linestring(rbind(l1_list$vert_body_center_sf,
-                                     fem_head_center,
-                                     s1_mid_sf))
+                                      fem_head_center,
+                                      s1_mid_sf))
   
   l1_pelvic_angle_value <- l1_tilt_value + pt_value
+  
+  
+  ############# T9PA ############
+  t9pa_line_sf <- st_linestring(rbind(t9_list$vert_body_center_sf,
+                                      fem_head_center,
+                                      s1_mid_sf))
+
+  t9pa_line_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
+                                                     line_st_geometry = t9pa_line_sf,
+                                                     distance_of_curve = st_length(st_linestring(rbind(t11_list$vert_body_center_sf,
+                                                                                                       fem_head_center)))/2.5)
   
   
   ############# T4PA ############
@@ -815,8 +826,8 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   
   
   t4pa_line_sf <- st_linestring(rbind(t4_list$vert_body_center_sf,
-                                     fem_head_center,
-                                     s1_mid_sf))
+                                      fem_head_center,
+                                      s1_mid_sf))
   
   t4pa_value <- t4_tilt_value + pt_value
   
@@ -845,7 +856,7 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   
   tpa_value <- t1_tilt_value + pt_value
   
-
+  
   
   ############# C2PA & C2 Tilt############
   fem_head_c2_distance <- st_distance(x = c2_list$dens_centroid, y = fem_head_center_sf)
@@ -868,22 +879,22 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                                          c(c2_list$dens_centroid[1], fem_head_center[2])))
   
   c2_tilt_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = c2_list$dens_centroid, 
-                                                  line_st_geometry = c2_tilt_line_sf,
-                                                  distance_of_curve = st_length(st_linestring(rbind(c2_list$dens_centroid,
-                                                                                                    fem_head_center)))/2.5)
-  
-  c2_tilt_line_up_sf <- st_linestring(rbind(c2_list$dens_centroid,
-                                            fem_head_center, 
-                                         c(fem_head_center[1], c2_list$dens_centroid[2])))
-  
-  c2_tilt_up_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
-                                                     line_st_geometry = c2_tilt_line_up_sf,
+                                                     line_st_geometry = c2_tilt_line_sf,
                                                      distance_of_curve = st_length(st_linestring(rbind(c2_list$dens_centroid,
                                                                                                        fem_head_center)))/2.5)
   
+  c2_tilt_line_up_sf <- st_linestring(rbind(c2_list$dens_centroid,
+                                            fem_head_center, 
+                                            c(fem_head_center[1], c2_list$dens_centroid[2])))
+  
+  c2_tilt_up_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
+                                                        line_st_geometry = c2_tilt_line_up_sf,
+                                                        distance_of_curve = st_length(st_linestring(rbind(c2_list$dens_centroid,
+                                                                                                          fem_head_center)))/2.5)
+  
   c2pa_line_sf <- st_linestring(rbind(c2_list$dens_centroid,
-                                     fem_head_center,
-                                     s1_mid_sf))
+                                      fem_head_center,
+                                      s1_mid_sf))
   
   c2pa_value <- c2_tilt_value + pt_value
   
@@ -906,9 +917,9 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   #                                                    )))
   
   extended_c2pa_curve <- jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
-                               line_st_geometry = extended_c2pa_line,
-                               distance_of_curve = st_length(st_linestring(rbind(extended_c2pa_line_point,
-                                                                                 fem_head_center)))/1.5)
+                                                      line_st_geometry = extended_c2pa_line,
+                                                      distance_of_curve = st_length(st_linestring(rbind(extended_c2pa_line_point,
+                                                                                                        fem_head_center)))/1.5)
   
   ####
   ## PT
@@ -919,15 +930,15 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
   
   pt_line_up_sf <- st_linestring(rbind(s1_mid_sf,
                                        fem_head_center,
-                                    c(fem_head_center[1], s1_mid[2])
+                                       c(fem_head_center[1], s1_mid[2])
   ))
   
   ### PT line up curve
   
   pt_line_up_curve_sf <- jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
-                                                                            line_st_geometry = pt_line_up_sf,
-                                                                            distance_of_curve = st_length(st_linestring(rbind(fem_head_center,
-                                                                                                                              s1_mid_sf)))/1.5)
+                                                      line_st_geometry = pt_line_up_sf,
+                                                      distance_of_curve = st_length(st_linestring(rbind(fem_head_center,
+                                                                                                        s1_mid_sf)))/1.5)
   
   ## ss
   ss_anterior_inferior <- c(s1_mid[[1]] - spine_orientation*10 * cos(ss), s1_mid[[2]] - 10 * sin(ss))
@@ -999,17 +1010,29 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                      c2_tilt_value = c2_tilt_value,
                      thoracic_kyphosis =   spinal_kyphosis_input,
                      cervical_lordosis =  cervical_lordosis,
-                     # lumbar_spine_color = lumbar_color,
-                     # thoracic_spine_color = thoracic_color,pt_line_sf
-                     # pelvic_incidence_line_sf = st_geometry(st_zm(x = st_buffer(pelvic_incidence_line_sf, dist = 0.15, endCapStyle = "ROUND"))),
-                     # pt_line_sf = st_geometry(st_zm(x = st_buffer(pt_line_sf, dist = 0.15, endCapStyle = "ROUND"))),
-                     # ss_line_sf = st_geometry(st_zm(x = st_buffer(ss_line_sf, dist = 0.15, endCapStyle = "ROUND"))),
-                     # pelvic_incidence_line_sf = st_geometry(pelvic_incidence_line_sf),
+                     ## PELVIC LINES
                      pelvic_incidence_line_sf = st_geometry(pelvic_incidence_line_sf),
                      pt_line_sf = st_geometry(pt_line_sf),
                      pt_line_up_sf = st_geometry(pt_line_up_sf),
                      pt_line_up_curve_sf = st_geometry(pt_line_up_curve_sf),
                      ss_line_sf = st_geometry(ss_line_sf),
+                     ## VPA AND TILT LINES
+                     l1pa_line_sf = st_geometry(l1pa_line_sf),
+                     l1_tilt_line_sf = st_geometry(l1_tilt_line_sf),
+                     t9pa_line_sf = st_geometry(t9pa_line_sf),
+                     t9pa_line_curve_sf = st_geometry(t9pa_line_curve_sf),
+                     t4pa_line_sf = st_geometry(t4pa_line_sf),
+                     t4_tilt_line_sf = st_geometry(t4_tilt_line_sf),
+                     t1pa_line_sf = st_geometry(t1pa_line_sf),
+                     t1_tilt_line_sf = st_geometry(t1_tilt_line_sf),
+                     c2pa_line_sf = st_geometry(c2pa_line_sf),
+                     extended_c2pa_line = st_geometry(extended_c2pa_line),
+                     extended_c2pa_curve = st_geometry(extended_c2pa_curve),
+                     c2_tilt_line_sf = st_geometry(c2_tilt_line_sf),
+                     c2_tilt_curve_sf = st_geometry(c2_tilt_curve_sf),
+                     c2_tilt_line_up_sf = st_geometry(c2_tilt_line_up_sf),
+                     c2_tilt_up_curve_sf = st_geometry(c2_tilt_up_curve_sf),
+                     ## SAGITTAL COBB LINES
                      l1s1_line_sf_1 = st_geometry(l1s1_line_sf_1),
                      l1s1_line_sf_2 = st_geometry(l1s1_line_sf_2),
                      l4s1_line_sf_1 = st_geometry(l4s1_line_sf_1),
@@ -1018,22 +1041,7 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                      t12_line_sf = st_geometry(st_zm(x = st_buffer(x = t12_line_sf, dist = 0.2, endCapStyle = "ROUND", joinStyle = "ROUND"))),
                      c2_line_sf = st_geometry(st_zm(x = st_buffer(x = c2_line_sf, dist = 0.2, endCapStyle = "ROUND", joinStyle = "ROUND"))),
                      c7_line_sf = st_geometry(st_zm(x = st_buffer(x = c7_line_sf, dist = 0.2, endCapStyle = "ROUND", joinStyle = "ROUND"))),
-                     c2pa_line_sf = st_geometry(c2pa_line_sf),
-                     extended_c2pa_line = st_geometry(extended_c2pa_line),
-                     extended_c2pa_curve = st_geometry(extended_c2pa_curve),
-                     c2_tilt_line_sf = st_geometry(c2_tilt_line_sf),
-                     c2_tilt_curve_sf = st_geometry(c2_tilt_curve_sf),
-                     c2_tilt_line_up_sf = st_geometry(c2_tilt_line_up_sf),
-                     c2_tilt_up_curve_sf = st_geometry(c2_tilt_up_curve_sf),
-                     t1pa_line_sf = st_geometry(t1pa_line_sf),
-                     t1_tilt_line_sf = st_geometry(t1_tilt_line_sf),
-                     t4pa_line_sf = st_geometry(t4pa_line_sf),
-                     t4_tilt_line_sf = st_geometry(t4_tilt_line_sf),
-                     l1pa_line_sf = st_geometry(l1pa_line_sf),
-                     l1_tilt_line_sf = st_geometry(l1_tilt_line_sf),
-                     # tpa_line_sf = st_geometry(st_zm(x = st_buffer(t2pa_line_sf, dist = 0.25, endCapStyle = "ROUND"))),
-                     # lpa_line_sf = st_geometry(st_zm(x = st_buffer(lpa_line_sf, dist = 0.25, endCapStyle = "ROUND"))),
-                     # l1_tilt_line_sf = st_geometry(l1_tilt_line_sf),
+ 
                      fem_head_geom = st_geometry(st_zm(x = fem_head_sf)),
                      fem_head_centroid_vector = as_vector(st_centroid(x = fem_center_circle_sf)),
                      s1_centroid_vector = as_vector(st_centroid(s1_center_circle_sf)),
@@ -1130,12 +1138,12 @@ build_full_spine_function_new <- function(pelv_inc_value = 50,
                            c2_geom = st_geometry(st_zm(st_buffer(x = st_buffer(x = c2_list$c2_with_dens, dist = -0.5, endCapStyle = "ROUND"), dist = 0.5, endCapStyle = "ROUND"))),
                            c1_geom = st_geometry(st_zm(st_buffer(x = st_buffer(x = c1_list$vert_body_sf, dist = -0.5, endCapStyle = "ROUND"), dist = 0.5, endCapStyle = "ROUND"))),
                            head_geom = st_geometry(st_zm(st_buffer(x = st_buffer(x = head_sf, dist = -0.5, endCapStyle = "ROUND"), dist = 0.5, endCapStyle = "ROUND")))
-                           ) %>%
+  ) %>%
     pivot_longer(cols = contains("geom"), names_to = "object", values_to = "geom")
   
-
+  
   iliac_screw_point <- st_centroid(st_buffer(st_linestring(rbind(fem_head_center,
-                                                          s1_mid_sf)), dist = 1))
+                                                                 s1_mid_sf)), dist = 1))
   ilium_list <- list(sp = s1p, 
                      screw_sf = st_buffer(x = st_linestring(rbind(s1p, iliac_screw_point)), dist = 0.5, nQuadSegs = 1, mitreLimit = 3))
   
