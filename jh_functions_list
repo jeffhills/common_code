@@ -57,6 +57,20 @@ jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6
   mutate(across(everything(), fct_inorder)) %>%
   mutate(across(everything(), fct_rev))
 
+jh_spine_levels_factors_long_df <- tibble(level = c("occiput", "c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5", "s1", "ilium")) %>%
+  # mutate(vertebral_count = c(-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26)) %>%
+  mutate(level_label = str_to_upper(level)) %>% 
+  mutate(level_tilt = paste0(level, "_tilt")) %>%
+  mutate(level_pelvic_angle = paste0(level, "_pelvic_angle")) %>%
+  mutate(level_cobb_angle = paste0(level, "_s1")) %>%
+  mutate(level_tilt_label = paste0(level_label, " Tilt")) %>%
+  mutate(level_pelvic_angle_label = paste0(level_label, " Pelvic Angle")) %>%
+  mutate(level_cobb_label = paste0(level_label, "-S1")) %>%
+  select(level, level_tilt, level_pelvic_angle, level_cobb_angle, level_label, level_tilt_label, level_pelvic_angle_label, level_cobb_label) %>%
+  mutate(across(everything(), fct_inorder)) %>%
+  mutate(across(everything(), fct_rev))%>%
+  mutate(vertebral_count = c(-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26)) 
+
 
 ########## UPPER CASE LEVELS FOR TEXT
 jh_make_vertebral_levels_upper_case_function <- function(vector_of_text){
