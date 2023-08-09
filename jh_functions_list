@@ -8,33 +8,153 @@ library(lubridate)
 library(glue)
 library(tableone)
 
-jh_fit_model_function <- function(outcome_text, model_type, predictor_text, cohort_df){
+############# ############# SPINE SPECIFIC ############## ############# 
+############# ############# SPINE SPECIFIC ############## ############# 
+############# ############# SPINE SPECIFIC ############## ############# 
+jh_number_to_vertebra_function <- function(verebral_number){
+  case_when(
+    verebral_number == -1 ~ 'Occiput', 
+    verebral_number ==  1 ~ "C1",
+    verebral_number ==  2 ~ "C2",
+    verebral_number ==  3 ~ "C3",
+    verebral_number ==  4 ~ "C4",
+    verebral_number ==  5 ~ "C5",
+    verebral_number ==  6 ~ "C6",
+    verebral_number ==  7 ~ "C7",
+    verebral_number ==  8 ~ "T1",
+    verebral_number ==  9 ~ "T2",
+    verebral_number ==  10 ~ "T3",
+    verebral_number ==  11 ~ "T4",
+    verebral_number ==  12 ~ "T5",
+    verebral_number ==  13 ~ "T6",
+    verebral_number ==  14 ~ "T7",
+    verebral_number ==  15 ~ "T8",
+    verebral_number ==  16 ~ "T9",
+    verebral_number ==  17 ~ "T10",
+    verebral_number ==  18 ~ "T11",
+    verebral_number ==  19 ~ "T12",
+    verebral_number ==  20 ~ "L1",
+    verebral_number ==  21 ~ "L2",
+    verebral_number ==  22 ~ "L3",
+    verebral_number ==  23 ~ "L4",
+    verebral_number ==  24 ~ "L5",
+    verebral_number ==  25 ~ "S1",
+    verebral_number ==  26 ~ "Ileum",
+    verebral_number ==  27 ~ "Ileum",
+    verebral_number ==  0 ~ "NA"
+  )
+}
+
+jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5")) %>%
+  mutate(level_label = str_to_upper(level)) %>% 
+  mutate(level_tilt = paste0(level, "_tilt")) %>%
+  mutate(level_pelvic_angle = paste0(level, "_pelvic_angle")) %>%
+  mutate(level_cobb_angle = paste0(level, "_s1")) %>%
+  mutate(level_tilt_label = paste0(level_label, " Tilt")) %>%
+  mutate(level_pelvic_angle_label = paste0(level_label, " Pelvic Angle")) %>%
+  mutate(level_cobb_label = paste0(level_label, "-S1")) %>%
+  select(level, level_tilt, level_pelvic_angle, level_cobb_angle, level_label, level_tilt_label, level_pelvic_angle_label, level_cobb_label) %>%
+  mutate(across(everything(), fct_inorder)) %>%
+  mutate(across(everything(), fct_rev))
+
+
+########## UPPER CASE LEVELS FOR TEXT
+jh_make_vertebral_levels_upper_case_function <- function(vector_of_text){
+  
+  new_string <- str_replace_all(vector_of_text, "c2pa", "C2PA")
+  new_string <- str_replace_all(new_string, "c3pa", "C3PA")
+  new_string <- str_replace_all(new_string, "c4pa", "C4PA")
+  new_string <- str_replace_all(new_string, "c5pa", "C5PA")
+  new_string <- str_replace_all(new_string, "c6pa", "C6PA")
+  new_string <- str_replace_all(new_string, "c7pa", "C7PA")
+  new_string <- str_replace_all(new_string, "t1pa", "T1PA")
+  new_string <- str_replace_all(new_string, "t2pa", "T2PA")
+  new_string <- str_replace_all(new_string, "t3pa", "T3PA")
+  new_string <- str_replace_all(new_string, "t4pa", "T4PA")
+  new_string <- str_replace_all(new_string, "t5pa", "T5PA")
+  new_string <- str_replace_all(new_string, "t6pa", "T6PA")
+  new_string <- str_replace_all(new_string, "t7pa", "T7PA")
+  new_string <- str_replace_all(new_string, "t8pa", "T8PA")
+  new_string <- str_replace_all(new_string, "t9pa", "T9PA")
+  new_string <- str_replace_all(new_string, "t10pa", "T10PA")
+  new_string <- str_replace_all(new_string, "t11pa", "T11PA")
+  new_string <- str_replace_all(new_string, "t12pa", "T12PA")
+  new_string <- str_replace_all(new_string, "l1pa", "L1PA")
+  new_string <- str_replace_all(new_string, "l2pa", "L2PA")
+  new_string <- str_replace_all(new_string, "l3pa", "L3PA")
+  new_string <- str_replace_all(new_string, "l4pa", "L4PA")
+  new_string <- str_replace_all(new_string, "l5pa", "L5PA")
+  
+  
+  new_string <- str_replace_all(new_string,"c1", "C1")
+  new_string <- str_replace_all(new_string, "c2", "C2")
+  new_string <- str_replace_all(new_string, "c3", "C3")
+  new_string <- str_replace_all(new_string, "c4", "C4")
+  new_string <- str_replace_all(new_string, "c5", "C5")
+  new_string <- str_replace_all(new_string, "c6", "C6")
+  new_string <- str_replace_all(new_string, "c7", "C7")
+  new_string <- str_replace_all(new_string, "t1", "T1")
+  new_string <- str_replace_all(new_string, "t2", "T2")
+  new_string <- str_replace_all(new_string, "t3", "T3")
+  new_string <- str_replace_all(new_string, "t4", "T4")
+  new_string <- str_replace_all(new_string, "t5", "T5")
+  new_string <- str_replace_all(new_string, "t6", "T6")
+  new_string <- str_replace_all(new_string, "t7", "T7")
+  new_string <- str_replace_all(new_string, "t8", "T8")
+  new_string <- str_replace_all(new_string, "t9", "T9")
+  new_string <- str_replace_all(new_string, "t10", "T10")
+  new_string <- str_replace_all(new_string, "t11", "T11")
+  new_string <- str_replace_all(new_string, "t12", "T12")
+  new_string <- str_replace_all(new_string, "l1", "L1")
+  new_string <- str_replace_all(new_string, "l2", "L2")
+  new_string <- str_replace_all(new_string, "l3", "L3")
+  new_string <- str_replace_all(new_string, "l4", "L4")
+  new_string <- str_replace_all(new_string, "l5", "L5")
+  new_string <- str_replace_all(new_string, "s1", "s1")
+  new_string <- str_replace_all(new_string, "s2ai", "S2AI")
+  new_string <- str_replace_all(new_string, "s2", "S2")
+  
+  new_string  
+}
+
+############# ############# MODELING  ############## ############# 
+############# ############# MODELING ############## ############# 
+############# ############# MODELING ############## ############# 
+
+jh_fit_model_function <- function(model_type, outcome_text, predictor_text, cohort_df){
   
   model_formula <- as.formula(paste(outcome_text, " ~ ", predictor_text))
   if(model_type == "lrm"){
     model_fit <- lrm(model_formula, cohort_df, x = TRUE, y = TRUE)
   }
-    if(model_type == "ols"){
+  if(model_type == "ols"){
     model_fit <- ols(model_formula, cohort_df, x = TRUE, y = TRUE)
-    }
-model_fit  
+  }
+  
+  if(model_type == "glm"){
+    model_fit <- glm(model_formula, cohort_df, 
+                     family = binomial(),
+                     # family = poisson(),
+                     x = TRUE, y = TRUE)
+  }
+  model_fit  
 }
 
 jh_get_regression_tibble_function <- function(imputed_model){
   tab_1 <- gtsummary::tbl_regression(imputed_model) %>%
-  add_significance_stars() %>%
-  as_tibble() %>%
-  clean_names() 
+    add_significance_stars() %>%
+    as_tibble() %>%
+    clean_names() 
   
-tab_2 <- gtsummary::tbl_regression(imputed_model) %>%
-  as_tibble() %>%
-  clean_names() %>%
-  rename(ci_95 = x95_percent_ci) %>%
-  select(-beta)%>%
-  mutate(p_value_numeric = as.double(str_remove_all(p_value, "<")))
-
-tab_1 %>%
-  left_join(tab_2)
+  tab_2 <- gtsummary::tbl_regression(imputed_model) %>%
+    as_tibble() %>%
+    clean_names() %>%
+    rename(ci_95 = x95_percent_ci) %>%
+    select(-beta)%>%
+    mutate(p_value_numeric = as.double(str_remove_all(p_value, "<")))
+  
+  tab_1 %>%
+    left_join(tab_2)
 }
 
 jh_make_table_1_function <- function(df_with_measures_to_include, stratify_by = "none", round_digitis_to = 1){
@@ -57,18 +177,6 @@ jh_make_table_1_function <- function(df_with_measures_to_include, stratify_by = 
   }
 }
 
-
-jh_spine_levels_factors_df <- tibble(level = c("c1", "c2", "c3", "c4", "c5", "c6", "c7", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4", "l5")) %>%
-  mutate(level_label = str_to_upper(level)) %>% 
-  mutate(level_tilt = paste0(level, "_tilt")) %>%
-  mutate(level_pelvic_angle = paste0(level, "_pelvic_angle")) %>%
-  mutate(level_cobb_angle = paste0(level, "_s1")) %>%
-  mutate(level_tilt_label = paste0(level_label, " Tilt")) %>%
-  mutate(level_pelvic_angle_label = paste0(level_label, " Pelvic Angle")) %>%
-  mutate(level_cobb_label = paste0(level_label, "-S1")) %>%
-  select(level, level_tilt, level_pelvic_angle, level_cobb_angle, level_label, level_tilt_label, level_pelvic_angle_label, level_cobb_label) %>%
-  mutate(across(everything(), fct_inorder)) %>%
-  mutate(across(everything(), fct_rev))
 
 ### THEME FUNCTION
 jh_theme_function <- function(theme_template = theme_minimal(), 
@@ -93,19 +201,7 @@ jh_theme_function <- function(theme_template = theme_minimal(),
           plot.title = element_text(face = "bold", size = plot_title_size, hjust = 0.5),
           plot.margin = margin(top_margin,right_margin,bottom_margin,left_margin)
     )
-  #   scale_color_manual(values = color_scale) +
-  #   scale_x_continuous(expand = expansion(add = c(expand_x_left_by,expand_x_right_by))
-  #                      ) +
-  #   scale_y_continuous(expand = expansion(add = c(expand_y_bottom_by,expand_y_top_by))
-  #                      ) 
-  # 
-  # if(convert_continuous_x_to_discrete == TRUE){
-  #   
-  # my_theme <- my_theme +
-  #     scale_x_continuous(breaks = 1:nrow(labels_levels_df),
-  #                    labels = labels_levels_df$measurement, expand = expansion(add = c(0.5,1))
-  #                    ) 
-  # }
+
   
   return(my_theme)
 }
@@ -246,8 +342,8 @@ my_theme_xaxis_angled <<- theme_minimal() +
 ## MAKE GGTEXTBOX FOR GGPLOT 
 jh_plot_text_box_function <- function(text_label = "enter label", text_x = 0.5, text_y = 0.5, text_size = 10, box_color = "blue", fontface = "bold.italic"){
   ggtext::geom_textbox(aes(x = text_x, 
-                             y = text_y, 
-                             label = text_label),
+                           y = text_y, 
+                           label = text_label),
                        box.padding = unit(c(3,3,2,3), "pt"),
                        color = box_color,
                        box.r = unit(1.5, "pt"),
@@ -256,9 +352,22 @@ jh_plot_text_box_function <- function(text_label = "enter label", text_x = 0.5, 
                        text.color = "black" ,
                        box.size = unit(1, "pt"),
                        width = NULL
-                       ) 
+  ) 
 }
 
+
+jh_get_stats_df_from_rms_model_function <- function(model_input, outcome_label){
+  
+  stats_df <- gtsummary::tbl_regression(model_input) %>%
+    as_tibble() %>%
+    clean_names() %>%
+    mutate(outcome = outcome_label) %>%
+    select(outcome, everything())
+  
+  names(stats_df) <- c("outcome", "covariate", "beta", "ci_95_percent", "p_value")
+  
+  stats_df
+}
 
 ## ROUNDING FUNCTION
 jh_round_function <- function(number_to_round,round_to_nearest){
@@ -285,9 +394,53 @@ jh_get_R2_statement <- function(model){
   paste0("R² = ", round(r2,2))
 }
 
+## get C Index functions
+jh_get_c_index <- function(model){
+  c <- round(model$stats['C'], 2)
+  c
+}
+ 
+jh_get_c_index_statement <- function(model){
+  c <- round(model$stats['C'], 2)
+  
+  paste0("C Index = ", c)
+}
+
+jh_get_auc_function <- function(model, full_df){
+  outcome <- model$preproc$y_var
+  
+  model_df <- full_df %>%
+    select(outcome, everything())
+  
+  df <- augment(x = model, 
+                new_data = model_df) 
+  
+  names(df) <- c("outcome", names(df)[2:length(names(df))])
+  
+  roc_df <- roc_auc(data = df,
+                    truth = outcome,
+                    estimator = "binary", .pred_no) %>%
+    clean_names()
+  
+  return(round(roc_df$estimate, 3))
+}
+
+jh_get_median_and_iqr_values_function <- function(vector_of_interest, round_to = 1, unit = "number"){
+  
+  value_median <- round(median(vector_of_interest, na.rm = TRUE), round_to)
+  lower <- round(quantile(vector_of_interest, probs = 0.25, na.rm = TRUE), round_to)
+  upper <- round(quantile(vector_of_interest, probs = 0.75, na.rm = TRUE), round_to)
+  
+  if(str_detect(unit, "degree")){
+    statement <- glue("{value_median}º (IQR, {lower}º to {upper}º)")
+  }else{
+    statement <- glue("{value_median} (IQR, {lower} to {upper})") 
+  }
+  
+  return(as.character(statement))
+}
 
 ## NOMOGRAM FUNCTION
-
 jh_nomogram_function <- function(rms_model, predicted_variable_label, variable_order_vector_for_nomogram){
   predictor_vector <- rms_model$Design$name
   predictor_vector_labels <- rms_model$Design$label
@@ -587,7 +740,8 @@ jh_model_stats_summary_gg_table_function <- function(model_with_labels){
 ##### SPEARMAN RANK CORRELATION FUNCTION
 jh_spearman_rank_correlation_plot_function <- function(df_with_variables, 
                                                        variable_to_correlate_to,
-                                                       named_list_of_variables_and_labels, 
+                                                       named_list_of_variables_and_labels,
+                                                       plot_title = "xx",
                                                        label_text_size = 9){
   rho_label <- sprintf('\u03c1')
   
@@ -618,11 +772,17 @@ jh_spearman_rank_correlation_plot_function <- function(df_with_variables,
     mutate(measure = fct_inorder(measure)) %>%
     mutate(label = fct_inorder(label))
   
+  if(plot_title == "xx"){
+    title_for_plot <- glue("Correlation with {str_to_title(str_replace_all(string = variable_to_correlate_to, pattern = '_', replacement = ' ' ))}")
+  }else{
+    title_for_plot <- plot_title
+  }
+  
   spearman_plot <- global_spearman_iqr_skinny_df %>%
     ggplot() +
     geom_point(aes(x = adjusted_rho2, y = as.numeric(label)), size = 2) +
     xlab(label = glue("Adjusted {rho_label}²")) +
-    labs(title = glue("Correlation with {str_to_title(str_replace_all(string = variable_to_correlate_to, pattern = '_', replacement = ' ' ))}")) +
+    labs(title = title_for_plot) +
     ylab(NULL) +
     theme(panel.background = element_rect(colour = "black",size = 0.5, fill = NA),
           panel.grid.major.y = element_line(colour = "black", linetype = "dashed", size = 0.3),
@@ -630,12 +790,12 @@ jh_spearman_rank_correlation_plot_function <- function(df_with_variables,
           panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank(),
           panel.ontop = FALSE,
-          axis.text.x = text_10_bold,
+          axis.text.x = jh_text_list$text_10_bold,
           axis.text.y.left = element_text(size = label_text_size, face = "bold", hjust = 1),
           axis.text.y.right = element_text(size = label_text_size, hjust = 0),
-          axis.title = text_10_bold_centered,
-          plot.subtitle = text_8_centered,
-          plot.caption = text_8,
+          axis.title = jh_text_list$text_10_bold_centered,
+          plot.subtitle = jh_text_list$text_8_centered,
+          plot.caption = jh_text_list$text_8,
           plot.title = element_text(size = 12, hjust = 0.5, face = "bold", vjust = 1),
           axis.line = element_line(colour = "black", size = 0.5),
           axis.line.x.top = element_line(colour = "black", size = 0.5),
@@ -708,7 +868,7 @@ jh_reformat_surgimap_export_function <- function(raw_df){
     select(-measure, -value) %>%
     pivot_wider(names_from = vertebral_tilt_label, values_from = vertebral_tilt)
   
-  
+   
   vertebral_tilt_df <- order_columns_by_level_function(vertebral_tilt_pre_df)
   
   pelvic_angles_pre_df <- prepared_df %>%
@@ -724,3 +884,15 @@ jh_reformat_surgimap_export_function <- function(raw_df){
   
   return(alignment_measures_wide_df)
 }
+
+
+jh_symbols_list <- list(superscript_2 = "²",
+                        degree_symbol = "º",
+                        rho_label = sprintf('\u03c1'),
+                        multiplication_symbol = "×", 
+                        beta_symbol = "β", 
+                        plus_minus_sign = "±", 
+                        arrow_up = "↑", 
+                        arrow_down = "↓", 
+                        arrow_left = "←", 
+                        arrow_right = "→")
