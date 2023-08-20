@@ -444,6 +444,16 @@ jh_get_stats_df_from_rms_model_function <- function(model_input, outcome_label){
   stats_df
 }
 
+jh_get_p_values_from_rms_model_function <- function(model_input){
+  stats_table <- summary.lm(model_input)
+  
+  tibble(parameters = names(as.matrix(stats_table$coefficients)[,1])) %>%
+    bind_cols(stats_table$coefficients) %>%
+    clean_names() %>%
+    mutate(pr_t = round(pr_t, 4))
+  
+}
+
 ## ROUNDING FUNCTION
 jh_round_function <- function(number_to_round,round_to_nearest){
   round_to_nearest*round(number_to_round/round_to_nearest)
@@ -515,6 +525,66 @@ jh_get_median_and_iqr_values_function <- function(vector_of_interest, round_to =
   return(as.character(statement))
 }
 
+
+jh_compute_total_count_and_percent_statement_function <- function(categorical_vector, digits_to_round = 1, text_to_connect_numbers_to_variable = ""){
+  
+  total_count <- length(categorical_vector)
+  
+  if(any(str_to_lower(categorical_vector) == "yes")){
+    df <- tibble(var1 = str_to_lower(categorical_vector)) %>%
+      group_by(var1) %>%
+      add_tally(name = "total") %>%
+      ungroup() %>%
+      arrange(desc(total)) %>%
+      mutate(percent = round((total/total_count)*100), digits_to_round) %>%
+      mutate(total_and_percent = glue("{total}({percent}%)"))
+    
+    results_list <- list()
+    results_list$total_percent_yes <- (df %>% filter(var1 == "yes") %>% select(total_and_percent) %>% distinct())[1]
+    results_list$total_percent_no <- (df %>% filter(var1 == "no") %>% select(total_and_percent) %>% distinct())[1]
+  }else{
+    df <- tibble(variable1 = categorical_vector) %>%
+      group_by(variable1) %>%
+      add_tally(name = "total") %>%
+      ungroup() %>%
+      arrange(desc(total)) %>%
+      mutate(percent = round((total/total_count)*100), digits_to_round) %>%
+      mutate(total_and_percent = glue("{total}({percent}%)")) %>%
+      mutate(total_and_percent_and_category = glue("{total}({percent}%) {text_to_connect_numbers_to_variable} {str_to_lower(variable1)}"))%>%
+      mutate(category_total_and_percent = glue("{str_to_lower(variable1)} {text_to_connect_numbers_to_variable} {total}({percent}%)")) %>%
+      mutate(total_and_percent_and_category = str_squish(total_and_percent_and_category),
+             category_total_and_percent = str_squish(category_total_and_percent))
+    
+    results_list <- list()
+    
+    results_list$total_and_percent <- (df %>%
+                                         filter(total == max(total)) %>%
+                                         select(total_and_percent) %>%
+                                         distinct())$total_and_percent[1]
+    
+    results_list$total_and_percent_then_category <- (df %>%
+                                                       filter(total == max(total)) %>%
+                                                       select(total_and_percent_and_category) %>%
+                                                       distinct())$total_and_percent_and_category[1]
+    
+    results_list$category_then_total_and_percent <- (df %>%
+                                                       filter(total == max(total)) %>%
+                                                       select(category_total_and_percent) %>%
+                                                       distinct())$category_total_and_percent[1]
+    
+  }
+  return(results_list)
+}
+
+jh_compute_median_iqr_statement_function <- function(continuous_vector, digits_to_round = 1){
+  median_value <- round(median(continuous_vector, na.rm = TRUE), digits_to_round)
+  
+  lower_iqr <- round(quantile(continuous_vector, 0.25, na.rm = TRUE), digits_to_round)
+  upper_iqr <- round(quantile(continuous_vector, 0.75, na.rm = TRUE), digits_to_round)
+  
+  glue("{median_value}(IQR, {lower_iqr} to {upper_iqr})")
+  
+}
 ## NOMOGRAM FUNCTION
 jh_nomogram_function <- function(rms_model, predicted_variable_label, variable_order_vector_for_nomogram){
   predictor_vector <- rms_model$Design$name
