@@ -419,29 +419,77 @@ jh_plot_text_box_function <- function(text_label = "enter label", text_x = 0.5, 
   ggtext::geom_textbox(aes(x = text_x, 
                            y = text_y, 
                            label = text_label),
-                       box.padding = unit(c(3,3,2,3), "pt"),
+                       box.padding = unit(c(2,2,2,2), "pt"),
                        color = box_color,
                        box.r = unit(1.5, "pt"),
-                       size  = text_size*0.36,
+                       size  = text_size*0.36, 
                        fontface = fontface,
                        text.color = "black" ,
+                       halign  = 0.5,
+                       valign  = 0.5,
                        box.size = unit(1, "pt"),
                        width = NULL
   ) 
 }
 
 
-jh_get_stats_df_from_rms_model_function <- function(model_input, outcome_label){
+# jh_get_stats_df_from_rms_model_function <- function(model_input, outcome_label = "xxx"){
+#   
+#   
+#   stats_df <- gtsummary::tbl_regression(model_input) %>%
+#     as_tibble() %>%
+#     clean_names() %>%
+#     mutate(outcome = outcome_label) %>%
+#     select(outcome, everything())
+#   
+#   names(stats_df) <- c("outcome", "covariate", "beta", "ci_95_percent", "p_value")
+#   
+#   stats_df
+# }
+
+jh_get_stats_list_from_rms_model_function <- function(model_input, outcome_label = "xxx"){
   
-  stats_df <- gtsummary::tbl_regression(model_input) %>%
-    as_tibble() %>%
-    clean_names() %>%
-    mutate(outcome = outcome_label) %>%
-    select(outcome, everything())
+  outcome_text <- if_else(outcome_label == "xxx", str_to_title(str_replace_all(toString(model_input$terms[[2]]), "_", " ")), outcome_label)
   
-  names(stats_df) <- c("outcome", "covariate", "beta", "ci_95_percent", "p_value")
+  results_list <- list()
+  if(str_detect(toString(model_input$call), "ols")){
+    ## proceed with ols model
+    model_summary_matrix <- summary.lm(model_input)
+    
+    results_list$model_summary_df <- model_summary_matrix$coefficients %>%
+      as_tibble(rownames = "coefficents") %>% 
+      mutate(outcome = outcome_text) %>%
+      select(outcome, everything()) %>%
+      mutate_if(is.numeric, ~ round(., digits = 4))%>%
+      clean_names() %>%
+      rename(beta_estimate = estimate, p_value = pr_t)
+    
+    results_list$r2 <- round(test$r.squared, 2)
+    
+    results_list$r2_text <- glue("r² = {results_list$r2}")
+    
+  }else if(str_detect(toString(model_input$call), "lrm")){
+    ## proceed with logistic regression
+    model_summary_matrix <- summary(model_input)
+    
+    results_list$model_summary_df <- model_summary_matrix$coefficients %>%
+      as_tibble(rownames = "coefficents") %>% 
+      mutate(outcome = outcome_text) %>%
+      select(outcome, everything()) %>%
+      mutate_if(is.numeric, ~ round(., digits = 4))%>%
+      clean_names() %>%
+      rename(beta_estimate = estimate, p_value = pr_t)
+    
+    results_list$r2 <- round(test$r.squared, 2)
+    
+    results_list$r2_text <- glue("r² = {results_list$r2}")
+  }else{
+    
+    results_list <- "This is neither ols or lrm model"
+    
+  }
   
-  stats_df
+  return(results_list)
 }
 
 jh_get_p_values_from_rms_model_function <- function(model_input){
