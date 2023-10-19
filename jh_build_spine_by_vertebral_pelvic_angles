@@ -8,10 +8,10 @@ jh_plot_angle_curve_function <- function(line_st_geometry = NULL,
                                        y = st_multilinestring(st_buffer(st_point(x = vertex_vector), 
                                                                         dist = distance_of_curve)))
   
-  st_multilinestring(list(st_coordinates(line_st_geometry),
+  angle_curve_sf <- st_multilinestring(list(st_coordinates(line_st_geometry),
                           st_coordinates(angle_curve_geom)))
   
-  angle_curve_geom
+  angle_curve_sf
   
 }
 
@@ -1422,6 +1422,11 @@ build_full_spine_from_vertebral_pelvic_angles_function <- function(pelv_inc_valu
   l1pa_line_sf <- st_linestring(rbind(l1_list$vert_body_center_sf,
                                       fem_head_center,
                                       s1_mid_sf))
+
+  l1pa_line_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
+                                                       line_st_geometry = l1pa_line_sf,
+                                                       distance_of_curve = st_length(st_linestring(rbind(l2_list$vert_body_center_sf,
+                                                                                                         fem_head_center)))/2.5)
   
   l1_pelvic_angle_value <- l1_tilt_value + pt_value
   
@@ -1459,7 +1464,12 @@ build_full_spine_from_vertebral_pelvic_angles_function <- function(pelv_inc_valu
   t4pa_line_sf <- st_linestring(rbind(t4_list$vert_body_center_sf,
                                       fem_head_center,
                                       s1_mid_sf))
-  
+
+  t4pa_line_curve_sf <-   jh_plot_angle_curve_function(vertex_vector = fem_head_center, 
+                                                       line_st_geometry = t4pa_line_sf,
+                                                       distance_of_curve = st_length(st_linestring(rbind(t11_list$vert_body_center_sf,
+                                                                                                         fem_head_center)))/2.5)
+
   t4pa_value <- t4_tilt_value + pt_value
   
   
@@ -1650,9 +1660,11 @@ build_full_spine_from_vertebral_pelvic_angles_function <- function(pelv_inc_valu
                      ## VPA AND TILT LINES
                      l1pa_line_sf = st_geometry(l1pa_line_sf),
                      l1_tilt_line_sf = st_geometry(l1_tilt_line_sf),
+                     l1pa_line_curve_sf = st_geometry(t9pa_line_curve_sf),
                      t9pa_line_sf = st_geometry(t9pa_line_sf),
                      t9pa_line_curve_sf = st_geometry(t9pa_line_curve_sf),
                      t4pa_line_sf = st_geometry(t4pa_line_sf),
+                     t4pa_line_curve_sf = st_geometry(t9pa_line_curve_sf),
                      t4_tilt_line_sf = st_geometry(t4_tilt_line_sf),
                      t1pa_line_sf = st_geometry(t1pa_line_sf),
                      t1_tilt_line_sf = st_geometry(t1_tilt_line_sf),
