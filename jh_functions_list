@@ -507,6 +507,11 @@ jh_round_function <- function(number_to_round,round_to_nearest){
   round_to_nearest*round(number_to_round/round_to_nearest)
 }
 
+jh_round_all_columns_in_df_function <- function(df_input, digits_to_round = 2){
+  df_input %>%
+  mutate(across(.cols = is_double, .fns =  ~ round(.x, digits_to_round))) 
+}
+
 ## MODE FUNCTION
 jh_modes_function <- function(d){
   i <- which(diff(sign(diff(d$y))) < 0) + 1
