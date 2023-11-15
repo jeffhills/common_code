@@ -937,7 +937,13 @@ jh_spearman_rank_correlation_plot_function <- function(df_with_variables,
                                                        plot_title = "xx",
                                                        label_text_size = 9){
   rho_label <- sprintf('\u03c1')
-  
+
+  if(length(named_list_of_variables_and_labels) == 0){
+    named_list_of_variables_and_labels <- as.list(names(df_with_variables))
+    
+    names(named_list_of_variables_and_labels) <- str_to_title(str_replace_all(names(named_list_of_variables_and_labels), "_", " "))
+  }
+
   label_variable_df <- enframe(named_list_of_variables_and_labels) %>%
     unnest() %>%
     rename(label = name, measure = value)
@@ -1089,3 +1095,9 @@ jh_symbols_list <- list(superscript_2 = "²",
                         arrow_down = "↓", 
                         arrow_left = "←", 
                         arrow_right = "→")
+
+jh_datadist_function <- function(dataframe_input){
+  dd <- datadist(dataframe_input)
+  options(datadist='dd')
+}
+
