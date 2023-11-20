@@ -517,6 +517,29 @@ jh_round_all_columns_in_df_function <- function(df_input, selected_columns_to_in
   }
 }
 
+jh_format_p_value_function <- function(p_value_numeric){
+  
+  p_value_rounded <- case_when(
+    p_value_numeric > 0.05 ~ round(p_value_numeric, 2), 
+    round(p_value_numeric, 3) == 0.05 ~ 0.049,
+    round(p_value_numeric, 2) == 0.05 ~ round(p_value_numeric, 3), 
+    between(p_value_numeric, 0.010000000001, 0.05) ~ round(p_value_numeric, 2), 
+    round(p_value_numeric, 3) == 0 ~ 0.001, 
+    p_value_numeric < 0.01 ~ round(p_value_numeric, 3)
+    )
+  
+  p_value_sign <- case_when(
+    p_value_numeric > 0.05 ~ "=", 
+    round(p_value_numeric, 3) == 0.05 ~ "=",
+    round(p_value_numeric, 2) == 0.05 ~ "=", 
+    between(p_value_numeric, 0.010000000001, 0.05) ~ "=", 
+    round(p_value_numeric, 3) == 0 ~ "<", 
+    p_value_numeric < 0.01 ~ "="
+    )
+  
+  paste0("P", p_value_sign, p_value_rounded)
+}
+
 ## MODE FUNCTION
 jh_modes_function <- function(d){
   i <- which(diff(sign(diff(d$y))) < 0) + 1
