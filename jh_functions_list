@@ -537,7 +537,9 @@ jh_format_p_value_function <- function(p_value_numeric){
     p_value_numeric < 0.01 ~ "="
     )
   
-  paste0("P", p_value_sign, p_value_rounded)
+p_value_with_leading_zero <- paste0("P", p_value_sign, p_value_rounded)
+
+str_replace_all(p_value_with_leading_zero, pattern = "0\\.", "\\.")
 }
 
 ## MODE FUNCTION
