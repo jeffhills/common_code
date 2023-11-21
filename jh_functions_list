@@ -817,13 +817,20 @@ jh_nomogram_function <- function(rms_model, predicted_variable_label, variable_o
 
 
 ## GET MODEL EQUATION FUNCTION
-jh_get_model_equation <- function(model, model_outcome_label = "Outcome", variable_labels_vector_in_order = c("variable_1"), round_coefficients_to = 1, round_intercept_to = 0){
+jh_get_model_equation <- function(model, 
+                                  model_outcome_label = "Outcome", 
+                                  variable_labels_vector_in_order = c("variable_1"),
+                                  round_coefficients_to = 1, 
+                                  round_intercept_to = 0, 
+                                  coefficent_or_var_name_first = "coefficent"){
   
   abs_value_intercept <- abs(round(model$coefficients[['Intercept']], round_intercept_to))
   
-  right_hand_intercept_section <- if_else(round(model$coefficients[['Intercept']], round_intercept_to) < 0, 
-                                          glue("- {abs_value_intercept}"), 
-                                          glue("+ {abs_value_intercept}"))
+  right_hand_intercept_section <- case_when(
+    abs_value_intercept == 0 ~ "",
+    round(model$coefficients[['Intercept']], round_intercept_to) < 0 ~glue("- {abs_value_intercept}"),
+    round(model$coefficients[['Intercept']], round_intercept_to) > 0 ~glue("+ {abs_value_intercept}"),
+  )
   
   right_hand_df_no_intercept <- tibble(label = names(model$coefficients), value = model$coefficients)%>%
     mutate(label = str_to_lower(str_trim(label))) %>%
@@ -831,25 +838,30 @@ jh_get_model_equation <- function(model, model_outcome_label = "Outcome", variab
   
   if(length(names(model$coefficients)) == length(variable_labels_vector_in_order) + 1){
     
-    right_hand_df <- tibble(label = variable_labels_vector_in_order, value = right_hand_df_no_intercept$value)%>%
+    right_hand_df_pre <- tibble(label = variable_labels_vector_in_order, 
+                            value = right_hand_df_no_intercept$value)%>%
       mutate(value = round(value, round_coefficients_to)) %>%
       mutate(row_count = row_number()) %>%
       mutate(sign = if_else(value < 0, "-", "+")) %>%
-      mutate(sign = if_else(row_count == 1 & sign == "+", "", sign)) %>%
-      mutate(variable_section = glue("{sign} {value}×{label} ")) %>%
-      mutate(variable_section = as.character(variable_section))
+      mutate(sign = if_else(row_count == 1 & sign == "+", "", sign))
+    
+    if(coefficent_or_var_name_first == "coefficient"){
+      right_hand_df <- right_hand_df_pre %>%
+        mutate(variable_section = glue("{sign} {value}×{label} ")) %>%
+        mutate(variable_section = as.character(variable_section))
+    }else{
+      right_hand_df <- right_hand_df_pre %>%
+        mutate(variable_section = glue("{sign} {label}×{value} ")) %>%
+        mutate(variable_section = as.character(variable_section))
+    }
     
     right_hand_equation <- str_squish(paste(glue_collapse(right_hand_df$variable_section), right_hand_intercept_section))
     
     full_equation <- str_replace_all(string = paste(model_outcome_label, "=", right_hand_equation), pattern = "- -", replacement = "+ ")
     
-    
   }else{
-    
     full_equation <- "Please enter labels in the correct order for the variables in the model."
-    
   }
-  
   
   return(full_equation)
   
