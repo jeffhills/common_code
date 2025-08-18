@@ -1159,3 +1159,42 @@ jh_datadist_function <- function(dataframe_input){
   options(datadist='dd')
 }
 
+
+### FOR REBBUILDING A TIBBLE IN SHINY FOR TESTING ####
+jh_tibble_to_recreatable_r_code_text_function <- function(df, object_name = NULL) {
+  stopifnot(is.data.frame(df))
+  
+  # Build column-wise strings
+  col_strings <- lapply(names(df), function(col) {
+    vals <- df[[col]]
+    
+    if (is.character(vals)) {
+      vals_str <- paste0('"', vals, '"', collapse = ", ")
+      paste0(col, " = c(", vals_str, ")")
+    } else if (is.numeric(vals)) {
+      vals_str <- paste0(vals, collapse = ", ")
+      paste0(col, " = c(", vals_str, ")")
+    } else if (is.logical(vals)) {
+      vals_str <- paste0(ifelse(vals, "TRUE", "FALSE"), collapse = ", ")
+      paste0(col, " = c(", vals_str, ")")
+    } else if (is.factor(vals)) {
+      vals_str <- paste0('"', as.character(vals), '"', collapse = ", ")
+      paste0(col, " = factor(c(", vals_str, "))")
+    } else {
+      vals_str <- paste0(as.character(vals), collapse = ", ")
+      paste0(col, " = c(", vals_str, ")")
+    }
+  })
+  
+  # Assemble tibble code
+  tibble_code <- paste0("tibble(\n  ",
+                        paste(col_strings, collapse = ",\n"),
+                        "\n)")
+  
+  # Optionally assign to an object
+  if (!is.null(object_name)) {
+    tibble_code <- paste0(object_name, " <- ", tibble_code)
+  }
+  
+  return(cat(tibble_code))
+}
