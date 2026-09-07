@@ -619,6 +619,24 @@ jh_get_median_and_iqr_values_function <- function(vector_of_interest, round_to =
 }
 
 
+
+jh_make_plot_empty_function <- function(original_plot, remove_legend = TRUE) {
+  empty_plot <- original_plot
+  
+  empty_plot$layers <- lapply(
+    empty_plot$layers,
+    function(layer) {
+      layer$aes_params$alpha <- 0
+      layer
+    }
+  )
+  
+  if(remove_legend){
+    empty_plot <- empty_plot + theme(legend.position = "none")
+  }
+  empty_plot
+}
+
 jh_compute_total_count_and_percent_statement_function <- function(categorical_vector, digits_to_round = 1, text_to_connect_numbers_to_variable = ""){
   
   total_count <- length(categorical_vector)
