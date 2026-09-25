@@ -619,21 +619,39 @@ jh_get_median_and_iqr_values_function <- function(vector_of_interest, round_to =
 }
 
 
-
-jh_make_plot_empty_function <- function(original_plot, remove_legend = TRUE) {
+jh_make_plot_empty_function <- function(
+    original_plot,
+    remove_legend = TRUE
+) {
   empty_plot <- original_plot
   
   empty_plot$layers <- lapply(
-    empty_plot$layers,
-    function(layer) {
-      layer$aes_params$alpha <- 0
-      layer
+    original_plot$layers,
+    function(original_layer) {
+      
+      empty_layer <- ggplot2::ggproto(
+        NULL,
+        original_layer
+      )
+      
+      empty_layer$aes_params <- utils::modifyList(
+        original_layer$aes_params,
+        list(
+          alpha = 0,
+          colour = "transparent",
+          fill = "transparent"
+        )
+      )
+      
+      empty_layer
     }
   )
   
-  if(remove_legend){
-    empty_plot <- empty_plot + theme(legend.position = "none")
+  if (remove_legend) {
+    empty_plot <- empty_plot +
+      theme(legend.position = "none")
   }
+  
   empty_plot
 }
 
